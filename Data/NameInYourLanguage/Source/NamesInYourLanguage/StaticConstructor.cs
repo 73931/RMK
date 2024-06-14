@@ -33,11 +33,11 @@ namespace NamesInYourLanguage
                         continue;
                     NameTranslationDict[token[0]] = token[1];
                 }
-                Log.Message($"{NameTranslationDict.Count}개의 이름 번역이 추가되었습니다.");
+                Log.Message($"[RMK.NamesInYourLanguage] {NameTranslationDict.Count} name translations was found.");
             }
             else
             {
-                Log.Error("이름 번역을 불러오는데 에러가 발생했습니다.");
+                Log.Error("[RMK.NamesInYourLanguage] Name translations was not found.");
             }
 
         }
@@ -46,8 +46,7 @@ namespace NamesInYourLanguage
         {
             LongEventHandler.QueueLongEvent(() =>
             {
-                var banks = (Dictionary<PawnNameCategory, NameBank>)AccessTools
-                    .Field(typeof(PawnNameDatabaseShuffled), "banks").GetValue(null);
+                var banks = (Dictionary<PawnNameCategory, NameBank>)AccessTools.Field(typeof(PawnNameDatabaseShuffled), "banks").GetValue(null);
                 foreach (var nameBank in banks.Values)
                 {
                     var names = (List<string>[,])AccessTools.Field(typeof(NameBank), "names").GetValue(nameBank);
@@ -63,16 +62,24 @@ namespace NamesInYourLanguage
                     }
                 }
 
-                foreach (var nameTriple in PawnNameDatabaseSolid.AllNames())
+                if(LoadedModManager.GetMod<NIYL_Mod>().GetSettings<NIYL_Settings>().Enable)
                 {
-                    TranslateNameTriple(nameTriple);
-                }
+                    Log.Message("[RMK.NamesInYourLanguage] The module is set to enabled.");
 
-                foreach (var pawnBio in SolidBioDatabase.allBios)
-                {
-                    TranslateNameTriple(pawnBio.name);
+                    foreach (var nameTriple in PawnNameDatabaseSolid.AllNames())
+                    {
+                        TranslateNameTriple(nameTriple);
+                    }
+
+                    foreach (var pawnBio in SolidBioDatabase.allBios)
+                    {
+                        TranslateNameTriple(pawnBio.name);
+                    }
                 }
-            }, "Inject names", false, null);
+                else { Log.Message("[RMK.NamesInYourLanguage] The module is set to disabled."); }
+
+            }
+            , "Inject names", false, null);
         }
 
         private static readonly FieldInfo FieldInfoNameFirst = AccessTools.Field(typeof(NameTriple), "firstInt");

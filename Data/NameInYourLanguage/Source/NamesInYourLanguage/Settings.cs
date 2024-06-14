@@ -7,14 +7,14 @@ using Verse;
 
 namespace NamesInYourLanguage
 {
-    public class Settings : ModSettings
+    public class NIYL_Settings : ModSettings
     {
-        public static bool Enable = true;
+        public bool Enable = true;
 
         public override void ExposeData()
         {
+            Scribe_Values.Look(ref Enable, "NIYL_Enable", true);
             base.ExposeData();
-            Scribe_Values.Look(ref Enable, "KoreanNames_Enable", true);
         }
     }
 }

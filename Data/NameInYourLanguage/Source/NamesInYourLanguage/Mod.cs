@@ -12,13 +12,14 @@ using Verse;
 
 namespace NamesInYourLanguage
 {
-    public class Mod : Verse.Mod
+    public class NIYL_Mod : Mod
     {
-        public static bool Enable = true;
-
-        public Mod(ModContentPack content) : base(content)
+        NIYL_Settings settings;
+        public NIYL_Mod(ModContentPack content) : base(content)
         {
-            var harmony = new Harmony("seohyeon.namesinyourlanguage");
+            this.settings = GetSettings<NIYL_Settings>();
+
+            Harmony harmony = new Harmony("seohyeon.namesinyourlanguage");
             harmony.PatchAll();
         }
 
@@ -27,8 +28,12 @@ namespace NamesInYourLanguage
             base.DoSettingsWindowContents(inRect);
             var listing = new Listing_Standard();
             listing.Begin(inRect);
-            listing.CheckboxLabeled("이름 번역 활성화 여부", ref Settings.Enable, null);
-            if (Prefs.DevMode && listing.ButtonText("이름 추출하기 (개발자용)"))
+
+            //
+            listing.CheckboxLabeled("RMK.NIYL.EnableLabel".Translate(), ref settings.Enable, "RMK.NIYL.EnableDesc".Translate());
+
+            // 
+            if (Prefs.DevMode && listing.ButtonText("RMK.NIYL.ExtractUntranslatedNamesLabel".Translate()))
             {
                 var allNames = new List<string>();
                 foreach (var (key, value) in StaticConstructor.NameTranslationDict)
@@ -46,12 +51,13 @@ namespace NamesInYourLanguage
                 var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Translations.txt");
                 File.WriteAllLines(path, allNames);
             }
+
             listing.End();
         }
 
         public override string SettingsCategory()
         {
-            return "한글 이름 모드";
+            return "RMK - NIYL";
         }
     }
 }
