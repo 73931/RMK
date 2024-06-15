@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Mod.cs" />
+    <Compile Include="Types.cs" />
     <Compile Include="Patches.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="StaticConstructor.cs" />

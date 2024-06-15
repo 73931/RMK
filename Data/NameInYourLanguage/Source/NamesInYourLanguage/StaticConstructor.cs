@@ -19,14 +19,14 @@ namespace NamesInYourLanguage
     [StaticConstructorOnStartup]
     public static class StaticConstructor
     {
-        public static readonly Dictionary<string, string> NameTranslationDict = new Dictionary<string, string>();
-        public static readonly HashSet<string> NotTranslated = new HashSet<string>();
-        public static void Prepare() // Strings 파일을 불러와서 Dictionary에 저장
+        public static readonly DictionaryWithMetaValue<string, string, NameTriple> NameTranslationDict = new DictionaryWithMetaValue<string, string, NameTriple>();
+        public static readonly DictionaryWithMetaValue<string, string, NameTriple> NotTranslated = new DictionaryWithMetaValue<string, string, NameTriple>();
+        public static void Prepare()
         {
-            if (Translator.TryGetTranslatedStringsForFile("Names/Translations", out var lst))
+            if (Translator.TryGetTranslatedStringsForFile("Names/Translations", out List<string> lst))
             {
                 NameTranslationDict.Clear();
-                foreach (var item in lst) // item은 Translations.txt 파일의 한 개 줄
+                foreach (string item in lst)
                 {
                     if (item.StartsWith("//"))
                         continue;
@@ -43,7 +43,7 @@ namespace NamesInYourLanguage
 
                     NameTranslationDict[lhs] = rhs;
                 }
-                Log.Message($"[RMK.NamesInYourLanguage] {NameTranslationDict.Count} name translations was found.");
+                Log.Message($"[RMK.NamesInYourLanguage] {NameTranslationDict.Count()} name translations was found.");
             }
             else
             {
@@ -74,7 +74,6 @@ namespace NamesInYourLanguage
 
                 if(LoadedModManager.GetMod<NIYL_Mod>().GetSettings<NIYL_Settings>().Enable)
                 {
-                    Log.ResetMessageCount();
                     Log.Message("[RMK.NamesInYourLanguage] The module is set to enabled.");
 
                     foreach (NameTriple nameTriple in PawnNameDatabaseSolid.AllNames())
@@ -116,7 +115,11 @@ namespace NamesInYourLanguage
         private static void AddIfNotTranslated(string name)
         {
             if (Regex.IsMatch(name, "[A-Za-z]+") && !Regex.IsMatch(name, "[가-힣]+"))
-                NotTranslated.Add(name);
+            {
+                if (NameTranslationDict.TryGetMetaValue(name, out NameTriple triple))
+                NotTranslated.Add(name, name, triple);
+            }
+                
         }
     }
 }

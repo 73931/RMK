@@ -37,17 +37,19 @@ namespace NamesInYourLanguage
             if (Prefs.DevMode && listing.ButtonText("RMK.NIYL.ExtractUntranslatedNamesLabel".Translate()))
             {
                 var allNames = new List<string>();
-                foreach (var (key, value) in StaticConstructor.NameTranslationDict)
+                foreach (var (key, tuple) in StaticConstructor.NameTranslationDict)
                 {
-                    allNames.Add($"{key}->{value}");
+                    NameTriple triple = tuple.Item2;
+                    allNames.Add($"<{triple.First}::{triple.Nick}::{triple.Last}>{key}->{tuple.Item1}");
                 }
                 allNames = allNames.Distinct().ToList();
                 allNames.Sort();
 
-                foreach (var item in StaticConstructor.NotTranslated)
+                foreach (var (key, tuple) in StaticConstructor.NotTranslated)
                 {
-                    allNames.Add($"{item}->{item}");
-                    Log.Message($"not translated -> {item}->{item}");
+                    NameTriple triple = tuple.Item2;
+                    allNames.Add($"<{triple.First}::{triple.Nick}::{triple.Last}>{key}->{tuple.Item1}");
+                    Log.Message($"[RMK.NamesInYourLanguage] Not translated: {key}->{tuple.Item1}");
                 }
                 var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Translations.txt");
                 File.WriteAllLines(path, allNames);
