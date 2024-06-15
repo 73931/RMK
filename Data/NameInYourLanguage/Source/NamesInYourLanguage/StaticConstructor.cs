@@ -21,17 +21,27 @@ namespace NamesInYourLanguage
     {
         public static readonly Dictionary<string, string> NameTranslationDict = new Dictionary<string, string>();
         public static readonly HashSet<string> NotTranslated = new HashSet<string>();
-        public static void Prepare()
+        public static void Prepare() // Strings 파일을 불러와서 Dictionary에 저장
         {
             if (Translator.TryGetTranslatedStringsForFile("Names/Translations", out var lst))
             {
                 NameTranslationDict.Clear();
-                foreach (var item in lst)
+                foreach (var item in lst) // item은 Translations.txt 파일의 한 개 줄
                 {
-                    var token = item.Split(new[] { "->" }, StringSplitOptions.None);
-                    if (item.StartsWith("//") || token.Length != 2)
+                    if (item.StartsWith("//"))
                         continue;
-                    NameTranslationDict[token[0]] = token[1];
+
+                    string pattern = @"^(?:<([^>]+)>)?([^->]+)->(.+)$";
+                    Match match = Regex.Match(item, pattern);
+
+                    // lhs->rhs
+                    string lhs = match.Groups[3].Value;
+                    string rhs = match.Groups[4].Value;
+
+                    if (lhs == string.Empty || rhs == string.Empty)
+                        continue;
+
+                    NameTranslationDict[lhs] = rhs;
                 }
                 Log.Message($"[RMK.NamesInYourLanguage] {NameTranslationDict.Count} name translations was found.");
             }
@@ -64,14 +74,15 @@ namespace NamesInYourLanguage
 
                 if(LoadedModManager.GetMod<NIYL_Mod>().GetSettings<NIYL_Settings>().Enable)
                 {
+                    Log.ResetMessageCount();
                     Log.Message("[RMK.NamesInYourLanguage] The module is set to enabled.");
 
-                    foreach (var nameTriple in PawnNameDatabaseSolid.AllNames())
+                    foreach (NameTriple nameTriple in PawnNameDatabaseSolid.AllNames())
                     {
                         TranslateNameTriple(nameTriple);
                     }
 
-                    foreach (var pawnBio in SolidBioDatabase.allBios)
+                    foreach (PawnBio pawnBio in SolidBioDatabase.allBios)
                     {
                         TranslateNameTriple(pawnBio.name);
                     }

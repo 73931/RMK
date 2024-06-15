@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -29,10 +30,10 @@ namespace NamesInYourLanguage
             var listing = new Listing_Standard();
             listing.Begin(inRect);
 
-            //
+            // 활성화 설정 체크박스
             listing.CheckboxLabeled("RMK.NIYL.EnableLabel".Translate(), ref settings.Enable, "RMK.NIYL.EnableDesc".Translate());
 
-            // 
+            // 이름 추출 버튼
             if (Prefs.DevMode && listing.ButtonText("RMK.NIYL.ExtractUntranslatedNamesLabel".Translate()))
             {
                 var allNames = new List<string>();
@@ -57,7 +58,7 @@ namespace NamesInYourLanguage
 
         public override string SettingsCategory()
         {
-            return "RMK - NIYL";
+            return "RMK - 글자수가어디까지";
         }
     }
 }
