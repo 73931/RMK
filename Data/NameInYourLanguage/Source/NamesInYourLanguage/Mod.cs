@@ -36,23 +36,36 @@ namespace NamesInYourLanguage
             // 이름 추출 버튼
             if (Prefs.DevMode && listing.ButtonText("RMK.NIYL.ExtractUntranslatedNamesLabel".Translate()))
             {
-                var allNames = new List<string>();
-                foreach (var (key, tuple) in StaticConstructor.NameTranslationDict)
+                try
                 {
-                    NameTriple triple = tuple.Item2;
-                    allNames.Add($"<{triple.First}::{triple.Nick}::{triple.Last}>{key}->{tuple.Item1}");
-                }
-                allNames = allNames.Distinct().ToList();
-                allNames.Sort();
+                    Log.Message("<flag> 1");
 
-                foreach (var (key, tuple) in StaticConstructor.NotTranslated)
-                {
-                    NameTriple triple = tuple.Item2;
-                    allNames.Add($"<{triple.First}::{triple.Nick}::{triple.Last}>{key}->{tuple.Item1}");
-                    Log.Message($"[RMK.NamesInYourLanguage] Not translated: {key}->{tuple.Item1}");
+                    var allNames = new List<string>();
+                    foreach (var (key, tuple) in StaticConstructor.NameTranslationDict)
+                    {
+                        NameTriple triple = tuple.Item2;
+                        allNames.Add($"<{triple.First}::{triple.Nick}::{triple.Last}>{key}->{tuple.Item1}");
+                    }
+                    allNames = allNames.Distinct().ToList();
+                    allNames.Sort();
+
+                    Log.Message("<flag> 2");
+
+                    foreach (var (key, tuple) in StaticConstructor.NotTranslated)
+                    {
+                        NameTriple triple = tuple.Item2;
+                        allNames.Add($"<{triple.First}::{triple.Nick}::{triple.Last}>{key}->{tuple.Item1}");
+                        Log.Message($"[RMK.NamesInYourLanguage] Not translated: {key}->{tuple.Item1}");
+                    }
+                    var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Translations.txt");
+                    File.WriteAllLines(path, allNames);
+
+                    Log.Message("<flag> 3");
                 }
-                var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Translations.txt");
-                File.WriteAllLines(path, allNames);
+                catch
+                {
+                    Log.Error("끼야아아아아악");
+                }
             }
 
             listing.End();
@@ -60,7 +73,7 @@ namespace NamesInYourLanguage
 
         public override string SettingsCategory()
         {
-            return "RMK - 글자수가어디까지";
+            return "RMK - 글자수가어디까지가";
         }
     }
 }
