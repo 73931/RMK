@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 namespace NamesInYourLanguage
 {
+    // 굳이 별도로 타입을 만든 이유는
+    // 그냥 재밌으니까..
     public class DictionaryWithMetaValue<TKey, TValue1, TValue2> : IEnumerable<KeyValuePair<TKey, (TValue1, TValue2)>>
     {
         private Dictionary<TKey, (TValue1, TValue2)> dictionary;
@@ -12,7 +14,7 @@ namespace NamesInYourLanguage
             dictionary = new Dictionary<TKey, (TValue1, TValue2)>();
         }
 
-        public void Add(TKey key, TValue1 value1,  TValue2 value2)
+        public void Add(TKey key, TValue1 value1, TValue2 value2)
         {
             dictionary.Add(key, (value1, value2));
         }
