@@ -27,24 +27,27 @@ namespace NamesInYourLanguage
             if (Translator.TryGetTranslatedStringsForFile("Names/Translations", out List<string> lst))
             {
                 Stopwatch stopwatch = Stopwatch.StartNew();
+
                 NameTranslationDict.Clear();
                 foreach (string item in lst)
                 {
                     if (item.StartsWith("//"))
                         continue;
 
-                    string pattern = @"(?:<([^>]*)>)?([^>]+)->([^>]+)"; // <first::nick:last>name->translation 에서 name과 translation 부분만 캡처하여
-                    Match match = Regex.Match(item, pattern); // 각각 Groups[2], Groups[3]에 저장합니다. (비필수인 <first::nick:last> 부분인 Group[1]은 캡처되지 않고 빈 문자열로 남습니다.)
+                    string pattern = @"^(?:<([^>]*)>)?([^>]+)->(.+)$"; // <Group1>Group2->Group3
+                    Match match = Regex.Match(item, pattern);
 
+                    string meta = match.Groups[1].Value; // 아직 사용처 구현을 안함
                     string lhs = match.Groups[2].Value;
                     string rhs = match.Groups[3].Value;
 
                     if (lhs == string.Empty || rhs == string.Empty)
                         continue;
 
-                    NameTranslationDict.Add(lhs, rhs, null);
+                    NameTranslationDict.Add(lhs, rhs, null); // 여기에 세 번째 매개변수가 null이 아니라 기존 솔리드DB에서 NameTriple을 검색해서 채워줄 수 있도록 하기
                 }
                 stopwatch.Stop();
+
                 Log.Message($"[RMK.NamesInYourLanguage] {NameTranslationDict.Count()} name translations were found in {stopwatch.ElapsedMilliseconds}ms.");
             }
             else
@@ -55,6 +58,7 @@ namespace NamesInYourLanguage
 
         static StaticConstructor()
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
             LongEventHandler.QueueLongEvent(() =>
             {
                 var banks = (Dictionary<PawnNameCategory, NameBank>)AccessTools.Field(typeof(PawnNameDatabaseShuffled), "banks").GetValue(null);
@@ -91,6 +95,8 @@ namespace NamesInYourLanguage
 
             }
             , "Inject names", false, null);
+            stopwatch.Stop();
+            Log.Message($"[RMK.NamesInYourLanguage] Translation was complete in {stopwatch.ElapsedMilliseconds}ms. {NotTranslated.Count()} names are left not to be translated.");
         }
 
         private static readonly FieldInfo FieldInfoNameFirst = AccessTools.Field(typeof(NameTriple), "firstInt");

@@ -1,13 +1,9 @@
-﻿using System;
+﻿using HarmonyLib;
+using RimWorld;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using HarmonyLib;
-using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -34,38 +30,37 @@ namespace NamesInYourLanguage
             listing.CheckboxLabeled("RMK.NIYL.EnableLabel".Translate(), ref settings.Enable, "RMK.NIYL.EnableDesc".Translate());
 
             // 이름 추출 버튼
-            if (Prefs.DevMode && listing.ButtonText("RMK.NIYL.ExtractUntranslatedNamesLabel".Translate()))
+            if (Prefs.DevMode && listing.ButtonText("RMK.NIYL.ExtractUntranslatedNamesLabel".Translate())) // 팝업창 띄워서 진행 상황 안내해주는 기능 추가하기
             {
-                try
+                List<string> allNames = new List<string>();
+                foreach (var (key, tuple) in StaticConstructor.NameTranslationDict)
                 {
-                    Log.Message("<flag> 1");
+                    NameTriple triple = tuple.Item2;
+                    string meta = string.Empty;
 
-                    var allNames = new List<string>();
-                    foreach (var (key, tuple) in StaticConstructor.NameTranslationDict)
+                    if (triple != null)
                     {
-                        NameTriple triple = tuple.Item2;
-                        allNames.Add($"<{triple.First}::{triple.Nick}::{triple.Last}>{key}->{tuple.Item1}");
+                        Log.Message("<flag> IsValid: true");
+                        string first = triple.First; Log.Message($"{first}");
+                        string nick = triple.Nick; Log.Message($"{nick}");
+                        string last = triple.Last; Log.Message($"{last}");
                     }
-                    allNames = allNames.Distinct().ToList();
-                    allNames.Sort();
 
-                    Log.Message("<flag> 2");
-
-                    foreach (var (key, tuple) in StaticConstructor.NotTranslated)
-                    {
-                        NameTriple triple = tuple.Item2;
-                        allNames.Add($"<{triple.First}::{triple.Nick}::{triple.Last}>{key}->{tuple.Item1}");
-                        Log.Message($"[RMK.NamesInYourLanguage] Not translated: {key}->{tuple.Item1}");
-                    }
-                    var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Translations.txt");
-                    File.WriteAllLines(path, allNames);
-
-                    Log.Message("<flag> 3");
+                    allNames.Add($"{meta}{key}->{tuple.Item1}");
                 }
-                catch
+                allNames = allNames.Distinct().ToList();
+                allNames.Sort();
+
+                foreach (var (key, tuple) in StaticConstructor.NotTranslated)
                 {
-                    Log.Error("끼야아아아아악");
+                    NameTriple triple = tuple.Item2;
+                    allNames.Add($"<{triple.First}::{triple.Nick}::{triple.Last}>{key}->{tuple.Item1}");
+                    Log.Message($"[RMK.NamesInYourLanguage] Not translated: {key}->{tuple.Item1}");
                 }
+                var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Translations.txt");
+                File.WriteAllLines(path, allNames);
+
+                Log.Message("<flag> 3");
             }
 
             listing.End();
