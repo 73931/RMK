@@ -33,7 +33,7 @@ namespace NamesInYourLanguage
             if (Prefs.DevMode && listing.ButtonText("RMK.NIYL.ExtractNamesLabel".Translate())) // 팝업창이나 알림 띄워서 진행 상황 안내해주는 기능 추가하기
             {
 #if DEBUG
-                Log.Message("[RMK.Debug] Starting to export names.");
+                Log.Message("[RMK.NIYL.Debug] Starting to export names.");
 #endif
 
                 List<string> allNames = new List<string>();
@@ -46,6 +46,13 @@ namespace NamesInYourLanguage
                     string tripleStrip = string.Empty;
                     if (triple != null)
                         tripleStrip = $"<{triple.First}::{triple.Nick}::{triple.Last}>";
+# if DEBUG
+                    else
+                    {
+                        Log.Message("[RMK.NIYL.Debug] nulllllllllllllllll");
+                        Log.ResetMessageCount();
+                    }
+#endif
 
                     allNames.Add($"{tripleStrip}{key}->{tuple.Item1}");
                 }
@@ -68,7 +75,7 @@ namespace NamesInYourLanguage
 
                     allNames.Add($"{tripleStrip}{key}->{tuple.Item1}");
 #if DEBUG
-                    Log.Message($"[RMK.NamesInYourLanguage] Not translated: {key}->{tuple.Item1}");
+                    Log.Message($"[RMK.NIYL.Debug] Not translated | {tripleStrip}{key}->{tuple.Item1}");
 #endif
                 }
                 var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Translations.txt");
