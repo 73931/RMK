@@ -52,6 +52,16 @@ namespace NamesInYourLanguage
             return false;
         }
 
+        public bool TrySetMetaValue(TKey key, TValue2 value2)
+        {
+            if(dictionary.ContainsKey(key))
+            {
+                dictionary[key] = (dictionary[key].Item1, value2);
+                return true;
+            }
+            return false;
+        }
+
         public TValue1 this[TKey key]
         {
             get => dictionary[key].Item1;

@@ -1,11 +1,11 @@
-﻿using RimWorld;
+﻿using HarmonyLib;
+using RimWorld;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using HarmonyLib;
-using Verse;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Diagnostics;
+using Verse;
 
 namespace NamesInYourLanguage
 {
@@ -44,7 +44,17 @@ namespace NamesInYourLanguage
                     string last = match2.Groups[3].Value;
 
                     NameTriple triple = null;
+                    if (first + nick + last != string.Empty) // 일단 Translations.txt에 NameTriple 메타 데이터가 기재되어 있을 경우 그걸 같이 저장해둡니다.
+                    {
+                        triple = new NameTriple(first, nick, last);
+#if DEBUG
+                        Log.Message($"[RMK.NIYL.Debug] Match Success | {triple.ToStringFull}");
+#endif
+                    }
 
+
+
+                    /*
                     Log.Message("[RMK.NIYL.Debug] flag ■");
                     if (first + nick + last != string.Empty) // 일단 Translations.txt에 NameTriple 메타 데이터가 기재되어 있을 경우 그걸 같이 저장해둡니다.
                     {
@@ -91,7 +101,7 @@ namespace NamesInYourLanguage
                             }
                         }
                         Log.Message("[RMK.NIYL.Debug] flag ■ ■ ■ ■");
-                    }
+                    }*/
                     Log.ResetMessageCount();
                     NameTranslationDict.Add(lhs, rhs, triple);
                 }
@@ -107,35 +117,96 @@ namespace NamesInYourLanguage
 
         static StaticConstructor()
         {
-            
+
             LongEventHandler.QueueLongEvent(() =>
             {
                 Stopwatch stopwatch = Stopwatch.StartNew();
-                var banks = (Dictionary<PawnNameCategory, NameBank>)AccessTools.Field(typeof(PawnNameDatabaseShuffled), "banks").GetValue(null);
-                foreach (var nameBank in banks.Values)
+
+                // Translation.txt 파일을 통해 생성한 NameTranslationDict의 비어있는 NameTriple 정보를 바닐라 데이터에서 검색하여 저장합니다.
+                Log.Message("[RMK.NIYL.Debug] flag ■ ■");
+
+
+                if (PawnNameDatabaseSolid.AllNames().Count() == 0)
+                    Log.Message("[RMK.NIYL.Debug] flag ■ ■ | PawnNameDatabaseSolid | No data");
+
+                if (SolidBioDatabase.allBios.Count() == 0)
+                    Log.Message("[RMK.NIYL.Debug] flag ■ ■ ■ | SolidBioDatabase | No data");
+
+                foreach (var (key, tuple) in NameTranslationDict)
                 {
-                    var names = (List<string>[,])AccessTools.Field(typeof(NameBank), "names").GetValue(nameBank);
-                    foreach (var name in names)
+                    NameTriple triple = tuple.Item2;
+
+                    // Translations.txt 파일에서 NameTriple 정보가 기록되지 않은 경우 바닐라 데이터에서 검색을 시도합니다.
+                    if (triple == null || triple.First + triple.Nick + triple.Last == "")
                     {
-                        for (int k = 0; k < name.Count; k++)
+                        NameTriple tripleToScribe = null;
+                        bool foundName = false;
+
+                        // 먼저 PawnNameDatabaseSolid에서 NameTriple을 검색합니다.
+                        if (!foundName)
+                            foreach (NameTriple nameTriple in PawnNameDatabaseSolid.AllNames())
+                            {
+                                Log.Message($"[RMK.NIYL.Debug] flag ■ ■ | {nameTriple.ToStringFull}");
+                                if (TryFindNameOnTriple(key, nameTriple, out NameTriple foundTriple))
+                                {
+                                    tripleToScribe = foundTriple;
+                                    Log.Message($"[RMK.NIYL.Debug] flag ■ ■ | TryFindNameOnTriple => PawnNameDatabaseSolid | {tripleToScribe.ToStringFull}");
+                                    foundName = true;
+                                    break;
+                                }
+                            }
+                        Log.Message($"[RMK.NIYL.Debug] flag ■ ■ ■ | foundName: {foundName}");
+
+
+
+                        if (!foundName)
+                            // PawnNameDatabaseSolid에서 찾지 못했을 경우 SolidBioDatabase.allBios에서 검색합니다.
+                            foreach (PawnBio pawnBio in SolidBioDatabase.allBios)
+                            {
+                                Log.Message($"[RMK.NIYL.Debug] flag ■ ■ ■ | {pawnBio.name.ToStringFull}");
+                                if (TryFindNameOnTriple(key, pawnBio.name, out NameTriple foundTriple))
+                                {
+                                    tripleToScribe = foundTriple;
+                                    Log.Message($"[RMK.NIYL.Debug] flag ■ ■ ■ | TryFindNameOnTriple => SolidBioDatabase | {tripleToScribe.ToStringFull}");
+                                    foundName = true;
+                                    break;
+                                }
+                            }
+
+                        NameTranslationDict.TrySetMetaValue(key, tripleToScribe);
+                    }
+                    Log.Message("[RMK.NIYL.Debug] flag ■ ■ ■ ■");
+                }
+
+                // 모듈 설정이 활성화 돼있을 경우 번역을 시작합니다.
+                if (LoadedModManager.GetMod<NIYL_Mod>().GetSettings<NIYL_Settings>().Enable)
+                {
+                    // PawnNameDatabaseShuffled의 이름을 번역합니다.
+                    var banks = (Dictionary<PawnNameCategory, NameBank>)AccessTools.Field(typeof(PawnNameDatabaseShuffled), "banks").GetValue(null);
+                    foreach (var nameBank in banks.Values)
+                    {
+                        var names = (List<string>[,])AccessTools.Field(typeof(NameBank), "names").GetValue(nameBank);
+                        foreach (var name in names)
                         {
-                            if (NameTranslationDict.TryGetValue(name[k], out var translation))
-                                name[k] = translation;
-                            else
-                            { 
-                                AddIfNotTranslated(name[k]);
+                            for (int k = 0; k < name.Count; k++)
+                            {
+                                if (NameTranslationDict.TryGetValue(name[k], out var translation))
+                                    name[k] = translation;
+                                else
+                                {
+                                    AddIfNotTranslated(name[k]);
+                                }
                             }
                         }
                     }
-                }
 
-                if(LoadedModManager.GetMod<NIYL_Mod>().GetSettings<NIYL_Settings>().Enable)
-                {
+                    // PawnNameDatabaseSolid의 NameTriple 형식의 이름을 번역합니다.
                     foreach (NameTriple nameTriple in PawnNameDatabaseSolid.AllNames())
                     {
                         TranslateNameTriple(nameTriple);
                     }
 
+                    // SolidBioDatabase.allBios의 NameTriple 형식의 이름을 번역합니다.
                     foreach (PawnBio pawnBio in SolidBioDatabase.allBios)
                     {
                         TranslateNameTriple(pawnBio.name);
