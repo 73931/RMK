@@ -52,56 +52,6 @@ namespace NamesInYourLanguage
 #endif
                     }
 
-
-
-                    /*
-                    Log.Message("[RMK.NIYL.Debug] flag ■");
-                    if (first + nick + last != string.Empty) // 일단 Translations.txt에 NameTriple 메타 데이터가 기재되어 있을 경우 그걸 같이 저장해둡니다.
-                    {
-                        triple = new NameTriple(first, nick, last);
-#if DEBUG
-                        Log.Message($"[RMK.NIYL.Debug] Match Success | {triple.ToStringFull}");
-#endif
-                    }
-                    else // 아니라면 기존 DB에서 검색을 시도하고, 있다면 그걸 같이 저장해둡니다.
-                    {
-                        Log.Message("[RMK.NIYL.Debug] flag ■ ■");
-                        bool foundName = false;
-
-                        if (PawnNameDatabaseSolid.AllNames().Count() == 0)
-                            Log.Message("[RMK.NIYL.Debug] flag ■ ■ | PawnNameDatabaseSolid | No data"); // 이 시점에선 DB 자체가 없네?
-
-
-                        foreach (NameTriple nameTriple in PawnNameDatabaseSolid.AllNames()) // 여기로 들어가질 못해
-                        {
-                            Log.Message($"[RMK.NIYL.Debug] flag ■ ■ | {nameTriple.ToStringFull}");
-                            if (TryFindNameOnTriple(lhs, nameTriple, out NameTriple foundTriple))
-                            {
-                                triple = foundTriple;
-                                Log.Message($"[RMK.NIYL.Debug] flag ■ ■ | TryFindNameOnTriple => PawnNameDatabaseSolid | {triple.ToStringFull}");
-                                foundName = true;
-                                break;
-                            }
-                        }
-                        Log.Message($"[RMK.NIYL.Debug] flag ■ ■ ■ | foundName: {foundName}");
-
-                        if (SolidBioDatabase.allBios.Count() == 0)
-                            Log.Message("[RMK.NIYL.Debug] flag ■ ■ ■ | SolidBioDatabase | No data"); // 이 시점에선 DB 자체가 없네?
-
-                        if (!foundName)
-                        foreach (PawnBio pawnBio in SolidBioDatabase.allBios) // 여기로 들어가질 못해
-                            {
-                            Log.Message($"[RMK.NIYL.Debug] flag ■ ■ ■ | {pawnBio.name.ToStringFull}");
-                            if (TryFindNameOnTriple(lhs, pawnBio.name, out NameTriple foundTriple))
-                            {
-                                triple = foundTriple;
-                                Log.Message($"[RMK.NIYL.Debug] flag ■ ■ ■ | TryFindNameOnTriple => SolidBioDatabase | {triple.ToStringFull}");
-                                foundName = true;
-                                break;
-                            }
-                        }
-                        Log.Message("[RMK.NIYL.Debug] flag ■ ■ ■ ■");
-                    }*/
                     Log.ResetMessageCount();
                     NameTranslationDict.Add(lhs, rhs, triple);
                 }
@@ -123,14 +73,8 @@ namespace NamesInYourLanguage
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
                 // Translation.txt 파일을 통해 생성한 NameTranslationDict의 비어있는 NameTriple 정보를 바닐라 데이터에서 검색하여 저장합니다.
-                Log.Message("[RMK.NIYL.Debug] flag ■ ■");
-
-
-                if (PawnNameDatabaseSolid.AllNames().Count() == 0)
-                    Log.Message("[RMK.NIYL.Debug] flag ■ ■ | PawnNameDatabaseSolid | No data");
-
-                if (SolidBioDatabase.allBios.Count() == 0)
-                    Log.Message("[RMK.NIYL.Debug] flag ■ ■ ■ | SolidBioDatabase | No data");
+                Log.Message("[RMK.NIYL.Debug] flag ▲");
+                Dictionary<string, NameTriple> tempTripleDict = new Dictionary<string, NameTriple>();
 
                 foreach (var (key, tuple) in NameTranslationDict)
                 {
@@ -139,44 +83,24 @@ namespace NamesInYourLanguage
                     // Translations.txt 파일에서 NameTriple 정보가 기록되지 않은 경우 바닐라 데이터에서 검색을 시도합니다.
                     if (triple == null || triple.First + triple.Nick + triple.Last == "")
                     {
-                        NameTriple tripleToScribe = null;
-                        bool foundName = false;
-
-                        // 먼저 PawnNameDatabaseSolid에서 NameTriple을 검색합니다.
-                        if (!foundName)
-                            foreach (NameTriple nameTriple in PawnNameDatabaseSolid.AllNames())
-                            {
-                                Log.Message($"[RMK.NIYL.Debug] flag ■ ■ | {nameTriple.ToStringFull}");
-                                if (TryFindNameOnTriple(key, nameTriple, out NameTriple foundTriple))
-                                {
-                                    tripleToScribe = foundTriple;
-                                    Log.Message($"[RMK.NIYL.Debug] flag ■ ■ | TryFindNameOnTriple => PawnNameDatabaseSolid | {tripleToScribe.ToStringFull}");
-                                    foundName = true;
-                                    break;
-                                }
-                            }
-                        Log.Message($"[RMK.NIYL.Debug] flag ■ ■ ■ | foundName: {foundName}");
-
-
-
-                        if (!foundName)
-                            // PawnNameDatabaseSolid에서 찾지 못했을 경우 SolidBioDatabase.allBios에서 검색합니다.
-                            foreach (PawnBio pawnBio in SolidBioDatabase.allBios)
-                            {
-                                Log.Message($"[RMK.NIYL.Debug] flag ■ ■ ■ | {pawnBio.name.ToStringFull}");
-                                if (TryFindNameOnTriple(key, pawnBio.name, out NameTriple foundTriple))
-                                {
-                                    tripleToScribe = foundTriple;
-                                    Log.Message($"[RMK.NIYL.Debug] flag ■ ■ ■ | TryFindNameOnTriple => SolidBioDatabase | {tripleToScribe.ToStringFull}");
-                                    foundName = true;
-                                    break;
-                                }
-                            }
-
-                        NameTranslationDict.TrySetMetaValue(key, tripleToScribe);
+                        if(TryFindNameTripleOnDatabase(key, out NameTriple searchedTriple))
+                        {
+                            tempTripleDict.Add(key, searchedTriple);
+                            Log.Message($"[RMK.NIYL.Debug] Found name {key} in {searchedTriple.ToStringFull} from Database");
+                        }
                     }
-                    Log.Message("[RMK.NIYL.Debug] flag ■ ■ ■ ■");
                 }
+
+                // 위 단계에서 tempTripleDict에 저장된 NameTriple을 찾은 이름들을 NameTranslationDict에서 다시 찾아 Triple 정보를 채워줍니다.
+                /* 임시로 빼둠
+                foreach (var (key, triple) in tempTripleDict)
+                {
+                    NameTranslationDict.TrySetMetaValue(key, triple);
+
+                    NameTranslationDict.TryGetMetaValue(key, out NameTriple logTriple);
+                    Log.Message($"[RMK.NIYL.Debug] Filled NameTriple datum of {key} with {logTriple.ToStringFull}");
+                }
+                */
 
                 // 모듈 설정이 활성화 돼있을 경우 번역을 시작합니다.
                 if (LoadedModManager.GetMod<NIYL_Mod>().GetSettings<NIYL_Settings>().Enable)
@@ -217,7 +141,7 @@ namespace NamesInYourLanguage
                 }
                 else { stopwatch.Stop(); Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.ModuleDisabled".Translate()); }
             }
-            , "Inject names", false, null);
+            , "RMK.NIYL.StartUp".Translate(), false, null);
         }
 
         private static readonly FieldInfo FieldInfoNameFirst = AccessTools.Field(typeof(NameTriple), "firstInt");
@@ -268,19 +192,57 @@ namespace NamesInYourLanguage
             }
         }
 
-        public static bool TryFindNameOnTriple(string name, NameTriple triple, out NameTriple foundTriple)
+        // name이 triple에 존재하는지 여부를 확인합니다.
+        public static bool TryFindNameOnTriple(string name, NameTriple triple)
         {
             List<string> pieces = new List<string> { triple.First, triple.Nick, triple.Last };
             if (pieces.Contains(name))
-            {
-                foundTriple = triple;
                 return true;
-            }
             else
-            {
-                foundTriple = null;
                 return false;
-            }
+        }
+
+        // name이 바닐라 이름 DB에 존재하는지 확인하고 매치되는 NameTriple을 반환합니다.
+        private static bool TryFindNameTripleOnDatabase(string name, out NameTriple outTriple)
+        {
+            outTriple = null;
+            bool foundName = false;
+
+            // 먼저 PawnNameDatabaseSolid에서 name에 해당하는 NameTriple을 검색합니다.
+            if (!foundName)
+                foreach (NameTriple nameTriple in PawnNameDatabaseSolid.AllNames())
+                {
+                    // Log.Message($"[RMK.NIYL.Debug] flag Search 1 | {nameTriple.ToStringFull}"); // 여기다 로그 넣지말 것 -> 부하가 극심함
+                    if (TryFindNameOnTriple(name, nameTriple))
+                    {
+                        outTriple = nameTriple;
+                        Log.Message($"[RMK.NIYL.Debug] flag Search 1 | TryFindNameOnTriple => PawnNameDatabaseSolid | {outTriple.ToStringFull}");
+                        foundName = true;
+                        break;
+                    }
+                    Log.ResetMessageCount();
+                }
+
+            Log.Message($"[RMK.NIYL.Debug] flag Search 1 after | foundName: {foundName}");
+
+            if (!foundName)
+                // PawnNameDatabaseSolid에서 찾지 못했을 경우 SolidBioDatabase.allBios에서 검색합니다.
+                foreach (PawnBio pawnBio in SolidBioDatabase.allBios)
+                {
+                    // Log.Message($"[RMK.NIYL.Debug] flag Search 2 | {pawnBio.name.ToStringFull}");
+                    if (TryFindNameOnTriple(name, pawnBio.name))
+                    {
+                        outTriple = pawnBio.name;
+                        Log.Message($"[RMK.NIYL.Debug] flag Search 2 | TryFindNameOnTriple => SolidBioDatabase | {outTriple.ToStringFull}");
+                        foundName = true;
+                        break;
+                    }
+                    Log.ResetMessageCount();
+                }
+
+            Log.Message($"[RMK.NIYL.Debug] flag Search 2 after | foundName: {foundName}");
+            Log.ResetMessageCount();
+            return foundName;
         }
     }
 }
