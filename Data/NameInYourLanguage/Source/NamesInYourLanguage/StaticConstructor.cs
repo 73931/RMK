@@ -1,16 +1,8 @@
 ﻿using RimWorld;
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 using HarmonyLib;
-using UnityEngine;
 using Verse;
-using System.Runtime.ConstrainedExecution;
-using System.Collections;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
@@ -34,33 +26,69 @@ namespace NamesInYourLanguage
                     if (item.StartsWith("//"))
                         continue;
 
-                    string pattern = @"^(?:<([^>]*)>)?([^>]+)->(.+)$"; // <Group1>Group2->Group3
-                    Match match = Regex.Match(item, pattern);
+                    string pattern1 = @"^(?:<([^>]*)>)?([^>]+)->(.+)$"; // <Group1>Group2->Group3
+                    Match match1 = Regex.Match(item, pattern1);
 
-                    string meta = match.Groups[1].Value; // 아직 사용처 구현을 안함
-                    string lhs = match.Groups[2].Value;
-                    string rhs = match.Groups[3].Value;
+                    string lhs = match1.Groups[2].Value; // Group2 값 저장
+                    string rhs = match1.Groups[3].Value; // Group3 값 저장
 
                     if (lhs == string.Empty || rhs == string.Empty)
                         continue;
 
-                    NameTranslationDict.Add(lhs, rhs, null); // 여기에 세 번째 매개변수가 null이 아니라 기존 솔리드DB에서 NameTriple을 검색해서 채워줄 수 있도록 하기
+                    string meta = match1.Groups[1].Value; // Group1 값 저장
+                    string pattern2 = @"^(.*?)(?:::(.*?))?(?:::(.*?))?$"; // match1의 Group1 -> Group1::Group2::Group3
+                    Match match2 = Regex.Match(meta, pattern2);
+
+                    NameTriple triple = null;
+                    if (match2.Success) // 일단 Translations.txt에 NameTriple 메타 데이터가 기재되어 있을 경우 그걸 같이 저장해둡니다.
+                    {
+                        triple = new NameTriple(match2.Groups[1].Value, match2.Groups[2].Value, match2.Groups[3].Value);
+#if DEBUG
+                        Log.Message($"[RMK.NIYL.Debug] Match Success | {triple.ToStringFull}");
+#endif
+                    }
+                    else // 아니라면 기존 DB에서 검색을 시도하고, 있다면 그걸 같이 저장해둡니다.
+                    {
+                        bool foundName = false;
+                        foreach (NameTriple nameTriple in PawnNameDatabaseSolid.AllNames())
+                        {
+                            if (TryFindNameOnTriple(lhs, nameTriple, out NameTriple foundTriple))
+                            {
+                                triple = foundTriple;
+                                foundName = true;
+                                break;
+                            }
+                        }
+
+                        if (!foundName)
+                        foreach (PawnBio pawnBio in SolidBioDatabase.allBios)
+                        {
+                            if (TryFindNameOnTriple(lhs, pawnBio.name, out NameTriple foundTriple))
+                            {
+                                triple = foundTriple;
+                                foundName = true;
+                                break;
+                            }
+                        }
+                    }
+                    NameTranslationDict.Add(lhs, rhs, triple);
                 }
                 stopwatch.Stop();
 
-                Log.Message($"[RMK.NamesInYourLanguage] {NameTranslationDict.Count()} name translations were found in {stopwatch.ElapsedMilliseconds}ms.");
+                Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.LoadTranslationsSuccess".Translate(NameTranslationDict.Count(), stopwatch.ElapsedMilliseconds));
             }
             else
             {
-                Log.Error("[RMK.NamesInYourLanguage] Name translations were not found.");
+                Log.Warning("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.LoadTranslationsFailed".Translate());
             }
         }
 
         static StaticConstructor()
         {
-            Stopwatch stopwatch = Stopwatch.StartNew();
+            
             LongEventHandler.QueueLongEvent(() =>
             {
+                Stopwatch stopwatch = Stopwatch.StartNew();
                 var banks = (Dictionary<PawnNameCategory, NameBank>)AccessTools.Field(typeof(PawnNameDatabaseShuffled), "banks").GetValue(null);
                 foreach (var nameBank in banks.Values)
                 {
@@ -72,15 +100,15 @@ namespace NamesInYourLanguage
                             if (NameTranslationDict.TryGetValue(name[k], out var translation))
                                 name[k] = translation;
                             else
+                            { 
                                 AddIfNotTranslated(name[k]);
+                            }
                         }
                     }
                 }
 
                 if(LoadedModManager.GetMod<NIYL_Mod>().GetSettings<NIYL_Settings>().Enable)
                 {
-                    Log.Message("[RMK.NamesInYourLanguage] The module is set to enabled.");
-
                     foreach (NameTriple nameTriple in PawnNameDatabaseSolid.AllNames())
                     {
                         TranslateNameTriple(nameTriple);
@@ -90,13 +118,13 @@ namespace NamesInYourLanguage
                     {
                         TranslateNameTriple(pawnBio.name);
                     }
-                }
-                else { Log.Message("[RMK.NamesInYourLanguage] The module is set to disabled."); }
 
+                    stopwatch.Stop();
+                    Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.TranslationComplete".Translate(stopwatch.ElapsedMilliseconds, NotTranslated.Count()));
+                }
+                else { stopwatch.Stop(); Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.ModuleDisabled".Translate()); }
             }
             , "Inject names", false, null);
-            stopwatch.Stop();
-            Log.Message($"[RMK.NamesInYourLanguage] Translation was complete in {stopwatch.ElapsedMilliseconds}ms. {NotTranslated.Count()} names are left not to be translated.");
         }
 
         private static readonly FieldInfo FieldInfoNameFirst = AccessTools.Field(typeof(NameTriple), "firstInt");
@@ -108,25 +136,55 @@ namespace NamesInYourLanguage
             if (nameTriple.First != null && NameTranslationDict.TryGetValue(nameTriple.First, out var translation))
                 FieldInfoNameFirst.SetValue(nameTriple, translation);
             else
-                AddIfNotTranslated(nameTriple.First);
+                AddIfNotTranslated(nameTriple.First, nameTriple);
+
             if (nameTriple.Last != null && NameTranslationDict.TryGetValue(nameTriple.Last, out translation))
                 FieldInfoNameLast.SetValue(nameTriple, translation);
             else
-                AddIfNotTranslated(nameTriple.Last);
+                AddIfNotTranslated(nameTriple.Last, nameTriple);
+
             if (nameTriple.Nick != null && NameTranslationDict.TryGetValue(nameTriple.Nick, out translation))
                 FieldInfoNameNick.SetValue(nameTriple, translation);
             else
-                AddIfNotTranslated(nameTriple.Nick);
+                AddIfNotTranslated(nameTriple.Nick, nameTriple);
         }
 
-        private static void AddIfNotTranslated(string name)
+        private static void AddIfNotTranslated(string name, NameTriple triple = null)
         {
+#if DEBUG
+            string outString;
+            if (triple == null)
+                outString = string.Empty;
+            else
+                outString = triple.ToStringFull;
+
+#endif
+
             if (Regex.IsMatch(name, "[A-Za-z]+") && !Regex.IsMatch(name, "[가-힣]+"))
             {
-                if (NameTranslationDict.TryGetMetaValue(name, out NameTriple triple))
-                NotTranslated.Add(name, name, triple);
+                if (!NotTranslated.ContainsKey(name))
+                {
+                    NotTranslated.Add(name, name, triple);
+#if DEBUG
+                    Log.Message($"[RMK.Debug] AddIfNotTranslated | name: {name} | triple: {outString}");
+#endif
+                }
             }
-                
+        }
+
+        public static bool TryFindNameOnTriple(string name, NameTriple triple, out NameTriple foundTriple)
+        {
+            List<string> pieces = new List<string> { triple.First, triple.Nick, triple.Last };
+            if (pieces.Contains(name))
+            {
+                foundTriple = triple;
+                return true;
+            }
+            else
+            {
+                foundTriple = null;
+                return false;
+            }
         }
     }
 }

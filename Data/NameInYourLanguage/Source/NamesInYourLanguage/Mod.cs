@@ -30,37 +30,53 @@ namespace NamesInYourLanguage
             listing.CheckboxLabeled("RMK.NIYL.EnableLabel".Translate(), ref settings.Enable, "RMK.NIYL.EnableDesc".Translate());
 
             // 이름 추출 버튼
-            if (Prefs.DevMode && listing.ButtonText("RMK.NIYL.ExtractUntranslatedNamesLabel".Translate())) // 팝업창 띄워서 진행 상황 안내해주는 기능 추가하기
+            if (Prefs.DevMode && listing.ButtonText("RMK.NIYL.ExtractNamesLabel".Translate())) // 팝업창이나 알림 띄워서 진행 상황 안내해주는 기능 추가하기
             {
+#if DEBUG
+                Log.Message("[RMK.Debug] Starting to export names.");
+#endif
+
                 List<string> allNames = new List<string>();
+#if DEBUG
+                Log.Message("<flag> 170");
+#endif
                 foreach (var (key, tuple) in StaticConstructor.NameTranslationDict)
                 {
                     NameTriple triple = tuple.Item2;
-                    string meta = string.Empty;
-
+                    string tripleStrip = string.Empty;
                     if (triple != null)
-                    {
-                        Log.Message("<flag> IsValid: true");
-                        string first = triple.First; Log.Message($"{first}");
-                        string nick = triple.Nick; Log.Message($"{nick}");
-                        string last = triple.Last; Log.Message($"{last}");
-                    }
+                        tripleStrip = $"<{triple.First}::{triple.Nick}::{triple.Last}>";
 
-                    allNames.Add($"{meta}{key}->{tuple.Item1}");
+                    allNames.Add($"{tripleStrip}{key}->{tuple.Item1}");
                 }
+#if DEBUG
+                Log.Message("<flag> 171");
+#endif
                 allNames = allNames.Distinct().ToList();
                 allNames.Sort();
+
+#if DEBUG
+                Log.Message("<flag> 172");
+#endif
 
                 foreach (var (key, tuple) in StaticConstructor.NotTranslated)
                 {
                     NameTriple triple = tuple.Item2;
-                    allNames.Add($"<{triple.First}::{triple.Nick}::{triple.Last}>{key}->{tuple.Item1}");
+                    string tripleStrip = string.Empty;
+                    if (triple != null)
+                        tripleStrip = $"<{triple.First}::{triple.Nick}::{triple.Last}>";
+
+                    allNames.Add($"{tripleStrip}{key}->{tuple.Item1}");
+#if DEBUG
                     Log.Message($"[RMK.NamesInYourLanguage] Not translated: {key}->{tuple.Item1}");
+#endif
                 }
                 var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Translations.txt");
                 File.WriteAllLines(path, allNames);
 
-                Log.Message("<flag> 3");
+#if DEBUG
+                Log.Message("<flag> 173");
+#endif
             }
 
             listing.End();
@@ -68,7 +84,7 @@ namespace NamesInYourLanguage
 
         public override string SettingsCategory()
         {
-            return "RMK - 글자수가어디까지가";
+            return "RMK.NIYL.ModTitle".Translate();
         }
     }
 }

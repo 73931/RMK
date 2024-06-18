@@ -3,8 +3,9 @@ using System.Collections.Generic;
 
 namespace NamesInYourLanguage
 {
-    // 굳이 별도로 타입을 만든 이유는
-    // 그냥 재밌으니까..
+    // 기본적으로 키와 첫 번째 값을 일반적인 Dictionary처럼 사용할 수 있지만
+    // 필요할 때만 같이 저장된 두 번째 값을 활용할 수 있는걸 만들어보고 싶었는데
+    // 막상 만들다 보니깐 엄청 필요성 있는 것 같진 않기도 하고
     public class DictionaryWithMetaValue<TKey, TValue1, TValue2> : IEnumerable<KeyValuePair<TKey, (TValue1, TValue2)>>
     {
         private Dictionary<TKey, (TValue1, TValue2)> dictionary;
