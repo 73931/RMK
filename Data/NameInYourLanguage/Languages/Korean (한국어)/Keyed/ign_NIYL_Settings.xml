@@ -9,4 +9,5 @@
   <RMK.NIYL.Log.LoadTranslationsFailed>로드한 이름 번역이 없습니다.</RMK.NIYL.Log.LoadTranslationsFailed>
   <RMK.NIYL.Log.TranslationComplete>{0}ms 동안 이름 번역이 완료되었습니다. {1}개의 이름은 번역되지 않았습니다.</RMK.NIYL.Log.TranslationComplete>
   <RMK.NIYL.Log.ModuleDisabled>모듈 사용 설정이 꺼져있습니다. 이름을 번역하지 않습니다.</RMK.NIYL.Log.ModuleDisabled>
+  <RMK.NIYL.Log.TotalWorkTime>작업에 총 {0}ms가 소요되었습니다.</RMK.NIYL.Log.TotalWorkTime>
 </LanguageData>

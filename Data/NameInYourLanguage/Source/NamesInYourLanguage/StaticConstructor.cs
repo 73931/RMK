@@ -14,11 +14,19 @@ namespace NamesInYourLanguage
     {
         public static readonly DictionaryWithMetaValue<string, string, NameTriple> NameTranslationDict = new DictionaryWithMetaValue<string, string, NameTriple>();
         public static readonly DictionaryWithMetaValue<string, string, NameTriple> NotTranslated = new DictionaryWithMetaValue<string, string, NameTriple>();
+
+        private static readonly Dictionary<string, NameTriple> PawnNameDatabaseSolidAllNames = new Dictionary<string, NameTriple>();
+        private static readonly Dictionary<string, NameTriple> SolidBioDatabaseAllBiosName = new Dictionary<string, NameTriple>();
+
+        public static long TotalWorkTime = 0; // 전체 동작 시간을 체크하기 위한 변수
+
         public static void Prepare()
         {
+            Stopwatch stopwatch_Prepare = Stopwatch.StartNew();
+
             if (Translator.TryGetTranslatedStringsForFile("Names/Translations", out List<string> lst))
             {
-                Stopwatch stopwatch = Stopwatch.StartNew();
+                
 
                 NameTranslationDict.Clear();
                 foreach (string item in lst)
@@ -55,52 +63,86 @@ namespace NamesInYourLanguage
                     Log.ResetMessageCount();
                     NameTranslationDict.Add(lhs, rhs, triple);
                 }
-                stopwatch.Stop();
 
-                Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.LoadTranslationsSuccess".Translate(NameTranslationDict.Count(), stopwatch.ElapsedMilliseconds));
+                stopwatch_Prepare.Stop();
+                TotalWorkTime += stopwatch_Prepare.ElapsedMilliseconds;
+                Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.LoadTranslationsSuccess".Translate(NameTranslationDict.Count(), stopwatch_Prepare.ElapsedMilliseconds));
             }
             else
             {
+                stopwatch_Prepare.Stop();
+                TotalWorkTime += stopwatch_Prepare.ElapsedMilliseconds;
                 Log.Warning("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.LoadTranslationsFailed".Translate());
             }
         }
 
         static StaticConstructor()
         {
-
             LongEventHandler.QueueLongEvent(() =>
             {
-                Stopwatch stopwatch = Stopwatch.StartNew();
+                Stopwatch stopwatch_main = Stopwatch.StartNew();
 
-                // Translation.txt 파일을 통해 생성한 NameTranslationDict의 비어있는 NameTriple 정보를 바닐라 데이터에서 검색하여 저장합니다.
-                Log.Message("[RMK.NIYL.Debug] flag ▲");
+                // 바닐라의 비번역 NameTriple을 부분별로 쪼개서 찾기 쉽게 정리해둡니다.
+                Stopwatch stopwatch_sub = Stopwatch.StartNew();
+                foreach (NameTriple nameTriple in PawnNameDatabaseSolid.AllNames())
+                {
+                    PawnNameDatabaseSolidAllNames.TryAddOnDictionary(nameTriple.First, nameTriple);
+                    PawnNameDatabaseSolidAllNames.TryAddOnDictionary(nameTriple.Nick, nameTriple);
+                    PawnNameDatabaseSolidAllNames.TryAddOnDictionary(nameTriple.Last, nameTriple);
+                }
+
+                foreach (PawnBio pawnBio in SolidBioDatabase.allBios)
+                {
+                    SolidBioDatabaseAllBiosName.TryAddOnDictionary(pawnBio.name.First, pawnBio.name);
+                    SolidBioDatabaseAllBiosName.TryAddOnDictionary(pawnBio.name.Nick, pawnBio.name);
+                    SolidBioDatabaseAllBiosName.TryAddOnDictionary(pawnBio.name.Last, pawnBio.name);
+                }
+
+                stopwatch_sub.Stop();
+                Log.Message($"[RMK.NIYL.Debug] Loading solid NameTriples got {stopwatch_sub.ElapsedMilliseconds}ms");
+                //___________________________________________________________________________________________________________
+
+                // Translation.txt 파일을 통해 생성한 NameTranslationDict의 비어있는 NameTriple 정보를 바닐라 데이터에서 찾아봅니다.
+                stopwatch_sub.Restart();
+
                 Dictionary<string, NameTriple> tempTripleDict = new Dictionary<string, NameTriple>();
 
                 foreach (var (key, tuple) in NameTranslationDict)
                 {
+                    Log.ResetMessageCount();
+
                     NameTriple triple = tuple.Item2;
 
-                    // Translations.txt 파일에서 NameTriple 정보가 기록되지 않은 경우 바닐라 데이터에서 검색을 시도합니다.
+                    // Translations.txt 파일에서 NameTriple 정보가 기록되지 않은 경우
                     if (triple == null || triple.First + triple.Nick + triple.Last == "")
                     {
-                        if(TryFindNameTripleOnDatabase(key, out NameTriple searchedTriple))
+                        // 바닐라 데이터에서 검색을 시도합니다.
+                        if (TryFindNameTripleFromSolid(key, out NameTriple searchedTriple))
                         {
                             tempTripleDict.Add(key, searchedTriple);
-                            Log.Message($"[RMK.NIYL.Debug] Found name {key} in {searchedTriple.ToStringFull} from Database");
                         }
                     }
                 }
 
+                stopwatch_sub.Stop();
+                Log.Message($"[RMK.NIYL.Debug] Found {tempTripleDict.Count()} NameTriples from solid database in {stopwatch_sub.ElapsedMilliseconds}ms.");
+                //___________________________________________________________________________________________________________
+
                 // 위 단계에서 tempTripleDict에 저장된 NameTriple을 찾은 이름들을 NameTranslationDict에서 다시 찾아 Triple 정보를 채워줍니다.
-                /* 임시로 빼둠
+                stopwatch_sub.Restart();
+
                 foreach (var (key, triple) in tempTripleDict)
                 {
                     NameTranslationDict.TrySetMetaValue(key, triple);
 
                     NameTranslationDict.TryGetMetaValue(key, out NameTriple logTriple);
-                    Log.Message($"[RMK.NIYL.Debug] Filled NameTriple datum of {key} with {logTriple.ToStringFull}");
+                    Log.ResetMessageCount();
+                    //Log.Message($"[RMK.NIYL.Debug] Filling NameTriple | {key} | with {logTriple.ToStringFull}");
                 }
-                */
+
+                stopwatch_sub.Stop();
+                Log.Message($"[RMK.NIYL.Debug] Filling NameTriple is complete in {stopwatch_sub.ElapsedMilliseconds}ms");
+                //___________________________________________________________________________________________________________
 
                 // 모듈 설정이 활성화 돼있을 경우 번역을 시작합니다.
                 if (LoadedModManager.GetMod<NIYL_Mod>().GetSettings<NIYL_Settings>().Enable)
@@ -136,10 +178,19 @@ namespace NamesInYourLanguage
                         TranslateNameTriple(pawnBio.name);
                     }
 
-                    stopwatch.Stop();
-                    Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.TranslationComplete".Translate(stopwatch.ElapsedMilliseconds, NotTranslated.Count()));
+                    stopwatch_main.Stop();
+                    TotalWorkTime += stopwatch_main.ElapsedMilliseconds;
+                    Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.TranslationComplete".Translate(stopwatch_main.ElapsedMilliseconds, NotTranslated.Count()));
                 }
-                else { stopwatch.Stop(); Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.ModuleDisabled".Translate()); }
+                //___________________________________________________________________________________________________________
+                else
+                {
+                    stopwatch_main.Stop();
+                    TotalWorkTime += stopwatch_main.ElapsedMilliseconds;
+                    Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.ModuleDisabled".Translate());
+                }
+
+                Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.TotalWorkTime".Translate(TotalWorkTime));
             }
             , "RMK.NIYL.StartUp".Translate(), false, null);
         }
@@ -151,7 +202,7 @@ namespace NamesInYourLanguage
         private static void TranslateNameTriple(NameTriple nameTriple)
         {
 #if DEBUG
-            Log.Message($"[RMK.NIYL.Debug] Trying to translate {nameTriple.ToStringFull}");
+            //Log.Message($"[RMK.NIYL.Debug] Trying to translate {nameTriple.ToStringFull}");
             Log.ResetMessageCount();
 #endif
             if (nameTriple.First != null && NameTranslationDict.TryGetValue(nameTriple.First, out var translation))
@@ -186,13 +237,38 @@ namespace NamesInYourLanguage
                 {
                     NotTranslated.Add(name, name, triple);
 #if DEBUG
-                    Log.Message($"[RMK.NIYL.Debug] AddIfNotTranslated | name: {name} | triple: {outString}");
+                    //Log.Message($"[RMK.NIYL.Debug] AddIfNotTranslated | name: {name} | triple: {outString}");
 #endif
                 }
             }
         }
 
+        private static bool TryFindNameTripleFromSolid(string name, out NameTriple result)
+        {
+            result = null;
+            bool found = false;
+
+            if (!found)
+                if (PawnNameDatabaseSolidAllNames.TryGetValue(name, out result))
+                {
+                    found = true;
+                }
+
+            if (!found)
+                if (SolidBioDatabaseAllBiosName.TryGetValue(name, out result))
+                {
+                    found = true;
+                }
+
+#if DEBUG
+            //if (result != null)
+            //Log.Message($"[RMK.NIYL.Debug] TryFindNameTripleFromSolid | name: {name} | result: {result.ToStringFull}");
+#endif
+            return found;
+        }
+
         // name이 triple에 존재하는지 여부를 확인합니다.
+        // %%%% 아마 안 쓸 예정
         public static bool TryFindNameOnTriple(string name, NameTriple triple)
         {
             List<string> pieces = new List<string> { triple.First, triple.Nick, triple.Last };
@@ -203,6 +279,7 @@ namespace NamesInYourLanguage
         }
 
         // name이 바닐라 이름 DB에 존재하는지 확인하고 매치되는 NameTriple을 반환합니다.
+        // %%%% 아마 안 쓸 예정
         private static bool TryFindNameTripleOnDatabase(string name, out NameTriple outTriple)
         {
             outTriple = null;
@@ -243,6 +320,24 @@ namespace NamesInYourLanguage
             Log.Message($"[RMK.NIYL.Debug] flag Search 2 after | foundName: {foundName}");
             Log.ResetMessageCount();
             return foundName;
+        }
+
+        
+    }
+
+    public static class DictionaryExtension
+    {
+        public static bool TryAddOnDictionary<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value)
+        {
+            if (!dictionary.ContainsKey(key))
+            {
+                dictionary.Add(key, value);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

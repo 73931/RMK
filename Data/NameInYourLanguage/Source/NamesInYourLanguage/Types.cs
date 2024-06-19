@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace NamesInYourLanguage
@@ -54,7 +55,7 @@ namespace NamesInYourLanguage
 
         public bool TrySetMetaValue(TKey key, TValue2 value2)
         {
-            if(dictionary.ContainsKey(key))
+            if (dictionary.ContainsKey(key))
             {
                 dictionary[key] = (dictionary[key].Item1, value2);
                 return true;
@@ -72,7 +73,7 @@ namespace NamesInYourLanguage
         {
             foreach (var pair in dictionary)
             {
-                yield return new KeyValuePair<TKey, (TValue1, TValue2)> (pair.Key, pair.Value);
+                yield return new KeyValuePair<TKey, (TValue1, TValue2)>(pair.Key, pair.Value);
             }
         }
 
@@ -81,4 +82,55 @@ namespace NamesInYourLanguage
             return GetEnumerator();
         }
     }
+    /*
+    public class HashKeyDictionary<TKey, TValue>
+    {
+        private readonly HashSet<TKey> keys;
+        private readonly Dictionary<TKey, TValue> dictionary;
+
+        public HashKeyDictionary()
+        {
+            keys = new HashSet<TKey>();
+            dictionary = new Dictionary<TKey, TValue>();
+        }
+
+        public void Add(TKey key, TValue value)
+        {
+            if (!keys.Contains(key))
+            {
+                keys.Add(key);
+                dictionary.Add(key, value);
+            }
+            else
+            {
+                throw new ArgumentException("Add operation failed. The input parameter is already set.");
+            }
+        }
+
+        public bool ContainsKey(TKey key)
+        {
+            return keys.Contains(key);
+        }
+
+        public bool TryGetValue(TKey key, out TValue value)
+        {
+            if (keys.Contains(key))
+            {
+                if (dictionary.TryGetValue(key, out value))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                value = default(TValue);
+                return false;
+            }
+        }
+    }
+    */
 }
