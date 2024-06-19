@@ -15,10 +15,10 @@ namespace NamesInYourLanguage
         public static readonly DictionaryWithMetaValue<string, string, NameTriple> NameTranslationDict = new DictionaryWithMetaValue<string, string, NameTriple>();
         public static readonly DictionaryWithMetaValue<string, string, NameTriple> NotTranslated = new DictionaryWithMetaValue<string, string, NameTriple>();
 
-        private static readonly Dictionary<string, NameTriple> PawnNameDatabaseSolidAllNames = new Dictionary<string, NameTriple>();
-        private static readonly Dictionary<string, NameTriple> SolidBioDatabaseAllBiosName = new Dictionary<string, NameTriple>();
+        private static readonly Dictionary<string, NameTriple> PawnNameDatabaseSolidAllNames = new Dictionary<string, NameTriple>(); // 바닐라 원문에서 추출해올 데이터입니다.
+        private static readonly Dictionary<string, NameTriple> SolidBioDatabaseAllBiosName = new Dictionary<string, NameTriple>(); // 바닐라 원문에서 추출해올 데이터입니다.
 
-        public static long TotalWorkTime = 0; // 전체 동작 시간을 체크하기 위한 변수
+        public static long TotalWorkTime = 0; // 전체 동작 시간 체크용
 
         public static void Prepare()
         {
@@ -26,8 +26,6 @@ namespace NamesInYourLanguage
 
             if (Translator.TryGetTranslatedStringsForFile("Names/Translations", out List<string> lst))
             {
-                
-
                 NameTranslationDict.Clear();
                 foreach (string item in lst)
                 {
@@ -63,17 +61,14 @@ namespace NamesInYourLanguage
                     Log.ResetMessageCount();
                     NameTranslationDict.Add(lhs, rhs, triple);
                 }
-
-                stopwatch_Prepare.Stop();
-                TotalWorkTime += stopwatch_Prepare.ElapsedMilliseconds;
-                Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.LoadTranslationsSuccess".Translate(NameTranslationDict.Count(), stopwatch_Prepare.ElapsedMilliseconds));
             }
             else
             {
-                stopwatch_Prepare.Stop();
-                TotalWorkTime += stopwatch_Prepare.ElapsedMilliseconds;
-                Log.Warning("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.LoadTranslationsFailed".Translate());
+                Log.Warning("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.NoTranslationsFile".Translate());
             }
+
+            stopwatch_Prepare.Stop();
+            TotalWorkTime += stopwatch_Prepare.ElapsedMilliseconds;
         }
 
         static StaticConstructor()
@@ -83,7 +78,6 @@ namespace NamesInYourLanguage
                 Stopwatch stopwatch_main = Stopwatch.StartNew();
 
                 // 바닐라의 비번역 NameTriple을 부분별로 쪼개서 찾기 쉽게 정리해둡니다.
-                Stopwatch stopwatch_sub = Stopwatch.StartNew();
                 foreach (NameTriple nameTriple in PawnNameDatabaseSolid.AllNames())
                 {
                     PawnNameDatabaseSolidAllNames.TryAddOnDictionary(nameTriple.First, nameTriple);
@@ -97,14 +91,9 @@ namespace NamesInYourLanguage
                     SolidBioDatabaseAllBiosName.TryAddOnDictionary(pawnBio.name.Nick, pawnBio.name);
                     SolidBioDatabaseAllBiosName.TryAddOnDictionary(pawnBio.name.Last, pawnBio.name);
                 }
-
-                stopwatch_sub.Stop();
-                Log.Message($"[RMK.NIYL.Debug] Loading solid NameTriples got {stopwatch_sub.ElapsedMilliseconds}ms");
                 //___________________________________________________________________________________________________________
 
                 // Translation.txt 파일을 통해 생성한 NameTranslationDict의 비어있는 NameTriple 정보를 바닐라 데이터에서 찾아봅니다.
-                stopwatch_sub.Restart();
-
                 Dictionary<string, NameTriple> tempTripleDict = new Dictionary<string, NameTriple>();
 
                 foreach (var (key, tuple) in NameTranslationDict)
@@ -123,25 +112,13 @@ namespace NamesInYourLanguage
                         }
                     }
                 }
-
-                stopwatch_sub.Stop();
-                Log.Message($"[RMK.NIYL.Debug] Found {tempTripleDict.Count()} NameTriples from solid database in {stopwatch_sub.ElapsedMilliseconds}ms.");
                 //___________________________________________________________________________________________________________
 
                 // 위 단계에서 tempTripleDict에 저장된 NameTriple을 찾은 이름들을 NameTranslationDict에서 다시 찾아 Triple 정보를 채워줍니다.
-                stopwatch_sub.Restart();
-
                 foreach (var (key, triple) in tempTripleDict)
                 {
                     NameTranslationDict.TrySetMetaValue(key, triple);
-
-                    NameTranslationDict.TryGetMetaValue(key, out NameTriple logTriple);
-                    Log.ResetMessageCount();
-                    //Log.Message($"[RMK.NIYL.Debug] Filling NameTriple | {key} | with {logTriple.ToStringFull}");
                 }
-
-                stopwatch_sub.Stop();
-                Log.Message($"[RMK.NIYL.Debug] Filling NameTriple is complete in {stopwatch_sub.ElapsedMilliseconds}ms");
                 //___________________________________________________________________________________________________________
 
                 // 모듈 설정이 활성화 돼있을 경우 번역을 시작합니다.
@@ -180,17 +157,18 @@ namespace NamesInYourLanguage
 
                     stopwatch_main.Stop();
                     TotalWorkTime += stopwatch_main.ElapsedMilliseconds;
-                    Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.TranslationComplete".Translate(stopwatch_main.ElapsedMilliseconds, NotTranslated.Count()));
+                    Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.OverallReport".Translate(NameTranslationDict.Count(), NotTranslated.Count(), TotalWorkTime));
                 }
-                //___________________________________________________________________________________________________________
                 else
                 {
                     stopwatch_main.Stop();
                     TotalWorkTime += stopwatch_main.ElapsedMilliseconds;
                     Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.ModuleDisabled".Translate());
                 }
+                //___________________________________________________________________________________________________________
 
-                Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.TotalWorkTime".Translate(TotalWorkTime));
+
+
             }
             , "RMK.NIYL.StartUp".Translate(), false, null);
         }
@@ -201,10 +179,6 @@ namespace NamesInYourLanguage
 
         private static void TranslateNameTriple(NameTriple nameTriple)
         {
-#if DEBUG
-            //Log.Message($"[RMK.NIYL.Debug] Trying to translate {nameTriple.ToStringFull}");
-            Log.ResetMessageCount();
-#endif
             if (nameTriple.First != null && NameTranslationDict.TryGetValue(nameTriple.First, out var translation))
                 FieldInfoNameFirst.SetValue(nameTriple, translation);
             else
@@ -223,22 +197,11 @@ namespace NamesInYourLanguage
 
         private static void AddIfNotTranslated(string name, NameTriple triple = null)
         {
-#if DEBUG
-            string outString;
-            if (triple == null)
-                outString = string.Empty;
-            else
-                outString = triple.ToStringFull;
-#endif
-
             if (Regex.IsMatch(name, "[A-Za-z]+") && !Regex.IsMatch(name, "[가-힣]+"))
             {
                 if (!NotTranslated.ContainsKey(name))
                 {
                     NotTranslated.Add(name, name, triple);
-#if DEBUG
-                    //Log.Message($"[RMK.NIYL.Debug] AddIfNotTranslated | name: {name} | triple: {outString}");
-#endif
                 }
             }
         }
@@ -260,14 +223,11 @@ namespace NamesInYourLanguage
                     found = true;
                 }
 
-#if DEBUG
-            //if (result != null)
-            //Log.Message($"[RMK.NIYL.Debug] TryFindNameTripleFromSolid | name: {name} | result: {result.ToStringFull}");
-#endif
             return found;
         }
     }
 
+    // Dictionary 기본 Add 메서드는 TKey 중복 상황에서 예외를 뱉어내기 때문에 만듦.
     public static class DictionaryExtension
     {
         public static bool TryAddOnDictionary<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value)

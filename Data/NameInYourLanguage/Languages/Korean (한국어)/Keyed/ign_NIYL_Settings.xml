@@ -1,13 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
+  <RMK.NIYL.StartUp>이름 번역 모듈 동작 중</RMK.NIYL.StartUp>
+
   <RMK.NIYL.ModTitle>RMK - 이름 번역 모듈</RMK.NIYL.ModTitle>
   <RMK.NIYL.EnableLabel>NamesInYourLanguage 모듈 활성화</RMK.NIYL.EnableLabel>
   <RMK.NIYL.EnableDesc>바닐라에서 번역되지 않도록 지정된 폰의 고정 이름을 게임 설정 언어로 번역하는 기능을 활성화합니다.\n\n게임 성능에는 전혀 영향을 주지 않습니다.</RMK.NIYL.EnableDesc>
-  <RMK.NIYL.ExtractNamesLabel>원문 이름 DB 추출하기 (번역자용)</RMK.NIYL.ExtractNamesLabel>
-  <RMK.NIYL.StartUp>이름 번역 모듈 동작 중</RMK.NIYL.StartUp>
-  <RMK.NIYL.Log.LoadTranslationsSuccess>{1}ms 동안 {0}개의 이름 번역을 로드했습니다.</RMK.NIYL.Log.LoadTranslationsSuccess>
-  <RMK.NIYL.Log.LoadTranslationsFailed>로드한 이름 번역이 없습니다.</RMK.NIYL.Log.LoadTranslationsFailed>
-  <RMK.NIYL.Log.TranslationComplete>{0}ms 동안 이름 번역이 완료되었습니다. {1}개의 이름은 번역되지 않았습니다.</RMK.NIYL.Log.TranslationComplete>
+
+  <RMK.NIYL.Log.NoTranslationsFile>이름 번역 파일을 찾지 못했습니다.</RMK.NIYL.Log.NoTranslationsFile>
   <RMK.NIYL.Log.ModuleDisabled>모듈 사용 설정이 꺼져있습니다. 이름을 번역하지 않습니다.</RMK.NIYL.Log.ModuleDisabled>
-  <RMK.NIYL.Log.TotalWorkTime>작업에 총 {0}ms가 소요되었습니다.</RMK.NIYL.Log.TotalWorkTime>
+  <RMK.NIYL.Log.OverallReport>번역된 이름: {0} | 번역되지 않은 이름: {1} | 소요 시간: {2}ms</RMK.NIYL.Log.OverallReport>
+
+  <RMK.NIYL.Export.BottonLabel>원문 이름 DB 추출하기 (번역자용)</RMK.NIYL.Export.BottonLabel>
+  <RMK.NIYL.Export.Success>번역을 위한 이름 데이터가 {0}에 저장되었습니다.</RMK.NIYL.Export.Success>
+  <RMK.NIYL.Export.Failed>번역을 위한 이름 데이터를 내보내는데 실패했습니다.</RMK.NIYL.Export.Failed>
 </LanguageData>

@@ -29,43 +29,28 @@ namespace NamesInYourLanguage
             // 활성화 설정 체크박스
             listing.CheckboxLabeled("RMK.NIYL.EnableLabel".Translate(), ref settings.Enable, "RMK.NIYL.EnableDesc".Translate());
 
-            // 이름 추출 버튼
-            if (Prefs.DevMode && listing.ButtonText("RMK.NIYL.ExtractNamesLabel".Translate())) // 팝업창이나 알림 띄워서 진행 상황 안내해주는 기능 추가하기
-            {
-#if DEBUG
-                Log.Message("[RMK.NIYL.Debug] Starting to export names.");
-#endif
+            listing.GapLine(Listing_Standard.DefaultGap); // 줄 간격 삽입
 
-                List<string> allNames = new List<string>();
-#if DEBUG
-                Log.Message("<flag> 170");
-#endif
+            // 이름 추출 버튼
+            if (listing.ButtonText("RMK.NIYL.Export.BottonLabel".Translate(), null, (float)0.3))
+            {
+                List<string> allNames = new List<string>(); // 여기에 내보낼 데이터를 저장합니다.
+
+                // 이미 번역된 이름도 정리해서 담아둡니다.
                 foreach (var (key, tuple) in StaticConstructor.NameTranslationDict)
                 {
                     NameTriple triple = tuple.Item2;
                     string tripleStrip = string.Empty;
                     if (triple != null)
                         tripleStrip = $"<{triple.First}::{triple.Nick}::{triple.Last}>";
-# if DEBUG
-                    else
-                    {
-                        Log.Message("[RMK.NIYL.Debug] nulllllllllllllllll");
-                        Log.ResetMessageCount();
-                    }
-#endif
 
                     allNames.Add($"{tripleStrip}{key}->{tuple.Item1}");
                 }
-#if DEBUG
-                Log.Message("<flag> 171");
-#endif
+
                 allNames = allNames.Distinct().ToList();
                 allNames.Sort();
 
-#if DEBUG
-                Log.Message("<flag> 172");
-#endif
-
+                // 번역되지 않은 이름을 정리해서 담아둡니다.
                 foreach (var (key, tuple) in StaticConstructor.NotTranslated)
                 {
                     NameTriple triple = tuple.Item2;
@@ -74,21 +59,26 @@ namespace NamesInYourLanguage
                         tripleStrip = $"<{triple.First}::{triple.Nick}::{triple.Last}>";
 
                     allNames.Add($"{tripleStrip}{key}->{tuple.Item1}");
-#if DEBUG
-                    Log.Message($"[RMK.NIYL.Debug] Not translated | {tripleStrip}{key}->{tuple.Item1}");
-#endif
                 }
-                var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Translations.txt");
-                File.WriteAllLines(path, allNames);
 
-#if DEBUG
-                Log.Message("<flag> 173");
-#endif
+                // 정리된 이름 데이터를 바탕화면에 내보냅니다.
+                string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Translations.txt");
+                try
+                {
+                    File.WriteAllLines(path, allNames);
+
+                    MessageTypeDef RMK_ExportComplete = new MessageTypeDef();
+                    Messages.Message("RMK.NIYL.Export.Success".Translate(path), RMK_ExportComplete, false);
+                }
+                catch
+                {
+                    Log.Error("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Export.Failed".Translate());
+                }
             }
-
             listing.End();
         }
 
+        // 모드 설정 창에서 보여지는 이름입니다.
         public override string SettingsCategory()
         {
             return "RMK.NIYL.ModTitle".Translate();
