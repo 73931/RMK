@@ -266,63 +266,6 @@ namespace NamesInYourLanguage
 #endif
             return found;
         }
-
-        // name이 triple에 존재하는지 여부를 확인합니다.
-        // %%%% 아마 안 쓸 예정
-        public static bool TryFindNameOnTriple(string name, NameTriple triple)
-        {
-            List<string> pieces = new List<string> { triple.First, triple.Nick, triple.Last };
-            if (pieces.Contains(name))
-                return true;
-            else
-                return false;
-        }
-
-        // name이 바닐라 이름 DB에 존재하는지 확인하고 매치되는 NameTriple을 반환합니다.
-        // %%%% 아마 안 쓸 예정
-        private static bool TryFindNameTripleOnDatabase(string name, out NameTriple outTriple)
-        {
-            outTriple = null;
-            bool foundName = false;
-
-            // 먼저 PawnNameDatabaseSolid에서 name에 해당하는 NameTriple을 검색합니다.
-            if (!foundName)
-                foreach (NameTriple nameTriple in PawnNameDatabaseSolid.AllNames())
-                {
-                    // Log.Message($"[RMK.NIYL.Debug] flag Search 1 | {nameTriple.ToStringFull}"); // 여기다 로그 넣지말 것 -> 부하가 극심함
-                    if (TryFindNameOnTriple(name, nameTriple))
-                    {
-                        outTriple = nameTriple;
-                        Log.Message($"[RMK.NIYL.Debug] flag Search 1 | TryFindNameOnTriple => PawnNameDatabaseSolid | {outTriple.ToStringFull}");
-                        foundName = true;
-                        break;
-                    }
-                    Log.ResetMessageCount();
-                }
-
-            Log.Message($"[RMK.NIYL.Debug] flag Search 1 after | foundName: {foundName}");
-
-            if (!foundName)
-                // PawnNameDatabaseSolid에서 찾지 못했을 경우 SolidBioDatabase.allBios에서 검색합니다.
-                foreach (PawnBio pawnBio in SolidBioDatabase.allBios)
-                {
-                    // Log.Message($"[RMK.NIYL.Debug] flag Search 2 | {pawnBio.name.ToStringFull}");
-                    if (TryFindNameOnTriple(name, pawnBio.name))
-                    {
-                        outTriple = pawnBio.name;
-                        Log.Message($"[RMK.NIYL.Debug] flag Search 2 | TryFindNameOnTriple => SolidBioDatabase | {outTriple.ToStringFull}");
-                        foundName = true;
-                        break;
-                    }
-                    Log.ResetMessageCount();
-                }
-
-            Log.Message($"[RMK.NIYL.Debug] flag Search 2 after | foundName: {foundName}");
-            Log.ResetMessageCount();
-            return foundName;
-        }
-
-        
     }
 
     public static class DictionaryExtension
