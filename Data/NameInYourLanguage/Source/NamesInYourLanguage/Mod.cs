@@ -26,13 +26,27 @@ namespace NamesInYourLanguage
             var listing = new Listing_Standard();
             listing.Begin(inRect);
 
-            // 활성화 설정 체크박스
-            listing.CheckboxLabeled("RMK.NIYL.EnableLabel".Translate(), ref settings.Enable, "RMK.NIYL.EnableDesc".Translate());
+            // 활성화 여부를 설정하는 체크박스입니다.
+            listing.CheckboxLabeled("RMK.NIYL.Enable.Label".Translate(), ref settings.Enable, "RMK.NIYL.Enable.Desc".Translate());
 
-            listing.GapLine(Listing_Standard.DefaultGap); // 줄 간격 삽입
+            // 설정을 바꿀 경우 안내 문구를 띄웁니다.
+            if(StaticConstructor.loadedEnableSetting != LoadedModManager.GetMod<NIYL_Mod>().GetSettings<NIYL_Settings>().Enable)
+            {
+                using (new TextBlock(TextAnchor.MiddleCenter))
+                {
+                    listing.Label("RMK.NIYL.Enable.Notify".Translate());
+                }
+            }
+            else
+            {
+                listing.Gap((float)23.7); // 23.7! if:else 양쪽에서 똑같은 줄 간격이 유지되는 값입니다. 적어도 작성자의 환경에서는..
+            }
+
+            // 빈 공간 삽입
+            listing.Gap(Listing_Standard.DefaultGap);
 
             // 이름 추출 버튼
-            if (listing.ButtonText("RMK.NIYL.Export.BottonLabel".Translate(), null, (float)0.3))
+            if (listing.ButtonText("RMK.NIYL.Export.BottonLabel".Translate(), null, (float)0.28))
             {
                 List<string> allNames = new List<string>(); // 여기에 내보낼 데이터를 저장합니다.
 
@@ -75,6 +89,7 @@ namespace NamesInYourLanguage
                     Log.Error("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Export.Failed".Translate());
                 }
             }
+
             listing.End();
         }
 

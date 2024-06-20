@@ -18,6 +18,8 @@ namespace NamesInYourLanguage
         private static readonly Dictionary<string, NameTriple> PawnNameDatabaseSolidAllNames = new Dictionary<string, NameTriple>(); // 바닐라 원문에서 추출해올 데이터입니다.
         private static readonly Dictionary<string, NameTriple> SolidBioDatabaseAllBiosName = new Dictionary<string, NameTriple>(); // 바닐라 원문에서 추출해올 데이터입니다.
 
+        public static readonly bool loadedEnableSetting = LoadedModManager.GetMod<NIYL_Mod>().GetSettings<NIYL_Settings>().Enable; // '현재 게임에 적용된' 설정을 기록해둡니다.
+
         public static long TotalWorkTime = 0; // 전체 동작 시간 체크용
 
         public static void Prepare()
@@ -53,9 +55,6 @@ namespace NamesInYourLanguage
                     if (first + nick + last != string.Empty) // 일단 Translations.txt에 NameTriple 메타 데이터가 기재되어 있을 경우 그걸 같이 저장해둡니다.
                     {
                         triple = new NameTriple(first, nick, last);
-#if DEBUG
-                        Log.Message($"[RMK.NIYL.Debug] Match Success | {triple.ToStringFull}");
-#endif
                     }
 
                     Log.ResetMessageCount();
@@ -166,9 +165,6 @@ namespace NamesInYourLanguage
                     Log.Message("[RMK.NamesInYourLanguage] " + "RMK.NIYL.Log.ModuleDisabled".Translate());
                 }
                 //___________________________________________________________________________________________________________
-
-
-
             }
             , "RMK.NIYL.StartUp".Translate(), false, null);
         }

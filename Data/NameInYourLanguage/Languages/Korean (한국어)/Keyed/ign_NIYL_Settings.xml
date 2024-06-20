@@ -3,8 +3,9 @@
   <RMK.NIYL.StartUp>이름 번역 모듈 동작 중</RMK.NIYL.StartUp>
 
   <RMK.NIYL.ModTitle>RMK - 이름 번역 모듈</RMK.NIYL.ModTitle>
-  <RMK.NIYL.EnableLabel>NamesInYourLanguage 모듈 활성화</RMK.NIYL.EnableLabel>
-  <RMK.NIYL.EnableDesc>바닐라에서 번역되지 않도록 지정된 폰의 고정 이름을 게임 설정 언어로 번역하는 기능을 활성화합니다.\n\n게임 성능에는 전혀 영향을 주지 않습니다.</RMK.NIYL.EnableDesc>
+  <RMK.NIYL.Enable.Label>NamesInYourLanguage 모듈 활성화</RMK.NIYL.Enable.Label>
+  <RMK.NIYL.Enable.Desc>바닐라에서 번역되지 않도록 지정된 폰의 고정 이름을 게임 설정 언어로 번역하는 기능을 활성화합니다.\n\n게임 성능에는 전혀 영향을 주지 않습니다.</RMK.NIYL.Enable.Desc>
+  <RMK.NIYL.Enable.Notify>변경된 설정은 게임을 재시작한 뒤 적용됩니다.</RMK.NIYL.Enable.Notify>
 
   <RMK.NIYL.Log.NoTranslationsFile>이름 번역 파일을 찾지 못했습니다.</RMK.NIYL.Log.NoTranslationsFile>
   <RMK.NIYL.Log.ModuleDisabled>모듈 사용 설정이 꺼져있습니다. 이름을 번역하지 않습니다.</RMK.NIYL.Log.ModuleDisabled>
