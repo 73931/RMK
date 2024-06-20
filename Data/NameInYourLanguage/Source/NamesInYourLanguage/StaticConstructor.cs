@@ -1,10 +1,10 @@
-﻿using HarmonyLib;
-using RimWorld;
+﻿using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
+using System.Linq;
+using HarmonyLib;
+using RimWorld;
 using Verse;
 
 namespace NamesInYourLanguage
@@ -223,7 +223,7 @@ namespace NamesInYourLanguage
         }
     }
 
-    // Dictionary 기본 Add 메서드는 TKey 중복 상황에서 예외를 뱉어내기 때문에 만듦.
+    // Dictionary 기본 Add 메서드는 TKey 중복 상황에서 예외를 뱉는데, 그러지 말라고 만듦.
     public static class DictionaryExtension
     {
         public static bool TryAddOnDictionary<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value)
