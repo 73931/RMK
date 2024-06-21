@@ -48,7 +48,7 @@ namespace NamesInYourLanguage
             // 이름 추출 버튼
             if (listing.ButtonText("RMK.NIYL.Export.BottonLabel".Translate(), null, (float)0.28))
             {
-                List<string> allNames = new List<string>(); // 여기에 내보낼 데이터를 저장합니다.
+                List<string> allNames = new List<string>(); // 여기에 내보낼 이름 데이터를 저장합니다.
 
                 // 이미 번역된 이름도 정리해서 담아둡니다.
                 foreach (var (key, tuple) in StaticConstructor.NameTranslationDict)
@@ -74,6 +74,21 @@ namespace NamesInYourLanguage
 
                     allNames.Add($"{tripleStrip}{key}->{tuple.Item1}");
                 }
+
+                Log.Message($"{"RMK.NIYL.Export.Instruction".Translate()}");
+                /*
+                string[] Export_Instruction = "RMK.NIYL.Export.Instruction".Translate().ToString().Split("\\n", StringSplitOptions.None);
+                for (int i = 0; i < Export_Instruction.Length; i++)
+                {
+                    Export_Instruction[i] = "// " + Export_Instruction[i];
+                }
+
+                
+
+                List<string> linesToExport = new List<string>(Export_Instruction.ToList());
+                linesToExport.AddRange(allNames);
+                                */
+
 
                 // 정리된 이름 데이터를 바탕화면에 내보냅니다.
                 string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Translations.txt");

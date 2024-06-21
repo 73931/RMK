@@ -14,4 +14,5 @@
   <RMK.NIYL.Export.BottonLabel>원문 이름 DB 추출하기 (번역자용)</RMK.NIYL.Export.BottonLabel>
   <RMK.NIYL.Export.Success>번역을 위한 이름 데이터가 {0}에 저장되었습니다.</RMK.NIYL.Export.Success>
   <RMK.NIYL.Export.Failed>번역을 위한 이름 데이터를 내보내는데 실패했습니다.</RMK.NIYL.Export.Failed>
+  <RMK.NIYL.Export.Instruction>테스트1\n테스트2\n테스트3\n테스트4</RMK.NIYL.Export.Instruction>
 </LanguageData>
