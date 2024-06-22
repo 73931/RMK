@@ -75,20 +75,16 @@ namespace NamesInYourLanguage
                     allNames.Add($"{tripleStrip}{key}->{tuple.Item1}");
                 }
 
-                Log.Message($"{"RMK.NIYL.Export.Instruction".Translate()}");
-                
+                // 내보낼 파일 내용 앞 부분에 덧붙일 안내문을 준비합니다.
                 string[] Export_Instruction = "RMK.NIYL.Export.Instruction".Translate().ToString().Split('\n');
                 for (int i = 0; i < Export_Instruction.Length; i++)
                 {
                     Export_Instruction[i] = "// " + Export_Instruction[i];
                 }
 
-                
-
+                // 여기에다 내보낼 데이터를 모두 담을겁니다.
                 List<string> linesToExport = new List<string>(Export_Instruction.ToList());
                 linesToExport.AddRange(allNames);
-                                
-
 
                 // 정리된 이름 데이터를 바탕화면에 내보냅니다.
                 string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Translations.txt");
