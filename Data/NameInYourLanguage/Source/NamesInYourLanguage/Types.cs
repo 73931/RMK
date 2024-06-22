@@ -5,7 +5,7 @@ using System.Collections;
 namespace NamesInYourLanguage
 {
     // 기본적으로 키와 첫 번째 값을 일반적인 Dictionary처럼 사용할 수 있지만, 필요할 때만 같이 저장된 두 번째 값을 활용할 수 있는걸 만들어보고 싶었는데
-    // 막상 만들다 보니깐 이거 그냥 키가 같은 딕셔너리를 두 개를 쓰면 되는거 아닌가?
+    // 막상 만들다 보니깐 이거 그냥 키가 같은 딕셔너리를 두 개 쓰면 되는거 아닌가?
     // 하지만 다시 손대기엔 이미 귀찮고 별 차이도 없고..
     public class DictionaryWithMetaValue<TKey, TValue1, TValue2> : IEnumerable<KeyValuePair<TKey, (TValue1, TValue2)>>
     {

@@ -76,7 +76,7 @@ namespace NamesInYourLanguage
             {
                 Stopwatch stopwatch_main = Stopwatch.StartNew();
 
-                // 바닐라의 비번역 NameTriple을 부분별로 쪼개서 찾기 쉽게 정리해둡니다.
+                // 빠른 색인을 위해 바닐라의 비번역 NameTriple을 부분별로 쪼개서 정리해둡니다.
                 foreach (NameTriple nameTriple in PawnNameDatabaseSolid.AllNames())
                 {
                     PawnNameDatabaseSolidAllNames.TryAddOnDictionary(nameTriple.First, nameTriple);
@@ -121,7 +121,7 @@ namespace NamesInYourLanguage
                 //___________________________________________________________________________________________________________
 
                 // 모듈 설정이 활성화 돼있을 경우 번역을 시작합니다.
-                if (LoadedModManager.GetMod<NIYL_Mod>().GetSettings<NIYL_Settings>().Enable)
+                if (loadedEnableSetting)
                 {
                     // PawnNameDatabaseShuffled의 이름을 번역합니다.
                     var banks = (Dictionary<PawnNameCategory, NameBank>)AccessTools.Field(typeof(PawnNameDatabaseShuffled), "banks").GetValue(null);
